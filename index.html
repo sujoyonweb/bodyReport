@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Composition Generator</title>
+    <!-- html2pdf library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* BLOCK & SLATE MINIMALIST UI */
+        :root {
+            --bg-color: #f9fafb;
+            --surface: #ffffff;
+            --text-main: #111827;
+            --border-color: #d1d5db;
+            --brand-red: #dc2626;
+            --brand-green: #16a34a;
+            --brand-blue: #2563eb;
+            --brand-orange: #f97316;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 32px;
+        }
+
+        .header {
+            margin-bottom: 32px;
+            border-bottom: 2px solid var(--text-main);
+            padding-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        /* Input Form Styles */
+        .input-panel {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            padding: 32px;
+            max-width: 900px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--surface);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            border-radius: 0; /* Strict block style */
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--text-main);
+        }
+
+        .btn {
+            background: var(--text-main);
+            color: var(--surface);
+            padding: 16px 32px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: #000;
+        }
+
+        /* OFF-SCREEN PDF TEMPLATE */
+        #pdfWrapper {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+        }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* PDF Layout matching image_19cc9e.jpg */
+        .pdf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .pdf-title {
+            text-align: right;
+            line-height: 1.1;
+        }
+        
+        .pdf-title h2 { font-size: 24px; margin: 0; }
+        .pdf-title h2.red { color: var(--brand-red); font-size: 32px; font-style: italic; }
+
+        .demo-box {
+            border: 1px solid #000;
+            border-radius: 8px;
+            padding: 10px 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .demo-row {
+            display: flex;
+            align-items: center;
+        }
+        
+        .demo-row strong {
+            width: 120px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .section-header {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .snapshot-area {
+            border: 1px solid #ccc;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .snapshot-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .stats-grid {
+            border: 1px solid #ccc;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: #ccc; /* borders */
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 15px 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 120px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .badge {
+            padding: 3px 12px;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .bg-green { background: var(--brand-green); }
+        .bg-blue { background: var(--brand-blue); }
+        .bg-orange { background: var(--brand-orange); }
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>Body Composition Utility</h1>
+    </header>
+
+    <main class="input-panel">
+        <form id="reportForm">
+            <div class="form-grid">
+                <!-- Data Entry -->
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="inName" required placeholder="e.g. John Doe">
+                </div>
+                <div class="input-group">
+                    <label>Age</label>
+                    <input type="number" id="inAge" required placeholder="e.g. 24">
+                </div>
+                <div class="input-group">
+                    <label>Sex</label>
+                    <input type="text" id="inSex" required placeholder="e.g. Male">
+                </div>
+                <div class="input-group">
+                    <label>Height (IN)</label>
+                    <input type="number" step="0.1" id="inHeight" required placeholder="e.g. 67">
+                </div>
+                
+                <!-- Raw Metrics -->
+                <div class="input-group">
+                    <label>Weight (kg)</label>
+                    <input type="number" step="0.01" id="inWeight" required placeholder="58.10">
+                </div>
+                <div class="input-group">
+                    <label>Body Fat %</label>
+                    <input type="number" step="0.01" id="inFat" required placeholder="20.40">
+                </div>
+                <div class="input-group">
+                    <label>Muscle Mass (kg)</label>
+                    <input type="number" step="0.01" id="inMuscle" required placeholder="43.23">
+                </div>
+                
+                <!-- File Upload -->
+                <div class="input-group">
+                    <label>Member Photo</label>
+                    <input type="file" id="inPhoto" accept="image/*" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn" id="generateBtn">Process & Download Report</button>
+        </form>
+    </main>
+
+    <!-- Hidden Output for PDF Generation -->
+    <div id="pdfWrapper">
+        <div id="pdfContent" class="a4-page">
+            
+            <!-- HEADER -->
+            <div class="pdf-header">
+                <div>
+                    <!-- Placeholder for the FIT BHARAT Logo you have -->
+                    <h1 style="color:#f97316; font-style:italic; font-size: 36px; margin:0;">FIT BHARAT</h1>
+                    <div style="background:#000; color:#fff; padding: 2px 10px; display:inline-block; font-weight:bold; font-size:12px;">THE ART OF FITNESS</div>
+                </div>
+                <div class="pdf-title">
+                    <h2>BODY COMPOSITION</h2>
+                    <h2 class="red">REPORT</h2>
+                </div>
+            </div>
+
+            <!-- DEMOGRAPHICS -->
+            <div class="demo-box">
+                <div class="demo-row"><strong>Name</strong> : <span id="outName"></span></div>
+                <div class="demo-row"><strong>Assessment Date</strong> : <span id="outDate"></span></div>
+                <div class="demo-row"><strong>Age</strong> : <span id="outAge"></span></div>
+                <div class="demo-row"><strong>Height</strong> : <span id="outHeight"></span> IN</div>
+                <div class="demo-row"><strong>Sex</strong> : <span id="outSex"></span></div>
+                <div class="demo-row"><strong>Fitness Center</strong> : Fit Bharat Fitness Centre</div>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="main-content">
+                
+                <!-- Photo Column -->
+                <div class="snapshot-area">
+                    <div class="section-header">YOUR BODY SNAPSHOT</div>
+                    <img id="outPhoto" class="snapshot-img" src="" alt="Member Photo">
+                </div>
+
+                <!-- Stats Column -->
+                <div>
+                    <div class="section-header" style="border-radius: 8px 8px 0 0;">BODY COMPOSITION SUMMARY</div>
+                    <div class="stats-grid">
+                        
+                        <!-- Weight -->
+                        <div class="stat-card">
+                            <span class="stat-label">Weight</span>
+                            <span class="stat-value" id="outWeight">0 kg</span>
+                            <span class="badge bg-green">OPTIMAL</span>
+                        </div>
+                        
+                        <!-- BMI (Calculated) -->
+                        <div class="stat-card">
+                            <span class="stat-label">BMI</span>
+                            <span class="stat-value" id="outBMI">0</span>
+                            <span class="badge bg-green">OPTIMAL</span>
+                        </div>
+                        
+                        <!-- Body Fat -->
+                        <div class="stat-card">
+                            <span class="stat-label">Body Fat %</span>
+                            <span class="stat-value" id="outFat">0 %</span>
+                            <span class="badge bg-blue">THIN</span>
+                        </div>
+                        
+                        <!-- Muscle Mass -->
+                        <div class="stat-card">
+                            <span class="stat-label">Muscle Mass</span>
+                            <span class="stat-value" id="outMuscle">0 kg</span>
+                            <span class="badge bg-green">NORMAL</span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('generateBtn');
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            // 1. Get Input Data
+            const name = document.getElementById('inName').value;
+            const age = document.getElementById('inAge').value;
+            const sex = document.getElementById('inSex').value;
+            const heightInches = parseFloat(document.getElementById('inHeight').value);
+            const weight = parseFloat(document.getElementById('inWeight').value);
+            const bodyFat = parseFloat(document.getElementById('inFat').value);
+            const muscleMass = parseFloat(document.getElementById('inMuscle').value);
+            const photoInput = document.getElementById('inPhoto');
+
+            // 2. Format Date
+            const today = new Date();
+            const dateStr = today.getDate() + ' ' + today.toLocaleString('default', { month: 'short' }).toUpperCase() + ' ' + today.getFullYear();
+
+            // 3. Simple Calculations (BMI)
+            // BMI = 703 * (weight_lbs / height_inches^2). 1kg = 2.20462 lbs
+            const weightLbs = weight * 2.20462;
+            const bmi = (703 * (weightLbs / (heightInches * heightInches))).toFixed(2);
+
+            // 4. Map to Output
+            document.getElementById('outName').innerText = name;
+            document.getElementById('outAge').innerText = age + ' Years';
+            document.getElementById('outSex').innerText = sex;
+            document.getElementById('outHeight').innerText = heightInches;
+            document.getElementById('outDate').innerText = dateStr;
+            
+            document.getElementById('outWeight').innerText = weight.toFixed(2) + ' kg';
+            document.getElementById('outFat').innerText = bodyFat.toFixed(2) + ' %';
+            document.getElementById('outMuscle').innerText = muscleMass.toFixed(2) + ' kg';
+            document.getElementById('outBMI').innerText = bmi;
+
+            // 5. Handle Image & Generate PDF
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('outPhoto').src = event.target.result;
+                    
+                    // Small delay to ensure image renders in the DOM before capturing
+                    setTimeout(() => createPDF(name, btn), 300);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            }
+        });
+
+        function createPDF(memberName, btnElement) {
+            const element = document.getElementById('pdfContent');
+            
+            const opt = {
+                margin:       0,
+                filename:     memberName.replace(/\s+/g, '_') + '_Report.pdf',
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Reset form and button
+                document.getElementById('reportForm').reset();
+                btnElement.innerText = "Process & Download Report";
+                btnElement.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
