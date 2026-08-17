@@ -1,0 +1,24 @@
+:root {
+    /* Main Layout Palette */
+    --app-bg: #e6e6e6;
+    --panel-bg: #ffffff;
+    
+    /* Text Colors */
+    --text-dark: #111111;
+    --text-muted: #888888;
+    
+    /* Form & Interaction */
+    --input-border: #cccccc;
+    --input-bg: #ffffff;
+    --focus-ring: rgba(0, 0, 0, 0.1);
+    
+    /* PDF Report Palette */
+    --pdf-bg: #ffffff;
+    --pdf-text: #111111;
+    --brand-orange: #ff6a13;
+
+    /* Typography */
+    --font-stack: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+    --ease-fluid: cubic-bezier(0.25, 1, 0.5, 1);
+}

@@ -1,0 +1,44 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: var(--app-bg);
+    font-family: var(--font-stack);
+    -webkit-font-smoothing: antialiased;
+    height: 100vh;
+    width: 100vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+/* Pill Navigation */
+.pill-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    margin: 20px auto;
+    background: #ffffff;
+    border-radius: 9999px;
+    padding: 12px 32px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+}
+.nav-brand { font-weight: 700; font-size: 16px; color: var(--text-dark); }
+.nav-links { display: flex; gap: 24px; }
+.nav-links a { text-decoration: none; font-weight: 600; font-size: 13px; color: var(--text-muted); transition: color 0.2s; }
+.nav-links a:hover { color: var(--text-dark); }
+
+/* Main Layout Grid */
+.app-layout {
+    display: flex;
+    gap: 30px; /* Tightened gap */
+    width: 100%;
+    flex: 1; /* Fills remaining space under nav */
+    justify-content: center; /* Perfect horizontal center */
+    align-items: center; /* Perfect vertical center */
+    padding-bottom: 20px;
+}
